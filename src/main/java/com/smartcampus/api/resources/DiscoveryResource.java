@@ -14,7 +14,7 @@ import javax.ws.rs.core.MediaType;
 
 /**
  *
- * @author akhas
+ * @author Akhash Vivekanantha
  */
 
 /**

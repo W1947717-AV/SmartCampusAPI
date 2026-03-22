@@ -18,7 +18,7 @@ import javax.ws.rs.core.Application;
 
 /**
  * Configures JAX-RS for the application.Registers REST resources and providers
- * @author Akhash
+ * @author Akhash Vivekanantha
  */
 @ApplicationPath("/api/v1")
 public class ApplicationConfig extends Application {

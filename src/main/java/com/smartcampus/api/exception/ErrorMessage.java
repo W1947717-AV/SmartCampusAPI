@@ -6,7 +6,7 @@ package com.smartcampus.api.exception;
 
 /**
  *
- * @author akhas
+ * @author Akhash Vivekanantha
  */
 
 /**

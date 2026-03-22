@@ -6,7 +6,7 @@ package com.smartcampus.api.model;
 
 /**
  *
- * @author akhash
+ * @author Akhash Vivekanantha
  */
 public interface BaseModel {
     int getId();

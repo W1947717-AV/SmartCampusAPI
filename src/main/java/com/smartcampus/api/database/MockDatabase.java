@@ -11,7 +11,7 @@ import com.smartcampus.api.model.SensorReading;
 
 import java.util.*;
 /**
- * @author akhash
+ * @author Akhash Vivekanantha
  */
 
 /**

@@ -8,7 +8,7 @@ import com.smartcampus.api.model.BaseModel;
 import java.util.List;
 /**
  *
- * @author akhash
+ * @author Akhash Vivekanantha
  */
 
 /**

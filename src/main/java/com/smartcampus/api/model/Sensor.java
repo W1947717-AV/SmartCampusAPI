@@ -6,7 +6,7 @@ package com.smartcampus.api.model;
 
 /**
  *
- * @author akhas
+ * @author Akhash Vivekanantha
  */
 
 /**

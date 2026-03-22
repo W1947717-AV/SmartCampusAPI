@@ -9,7 +9,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 /**
  *
- * @author akhas
+ * @author Akhash Vivekanantha
  */
 
 /**
