@@ -36,29 +36,74 @@ GET /api/v1/sensors/{id}/readings → sensor readings
 
 ## Sample curl Commands  
 ### 1. Discovery endpoint
+```bash
 curl -X GET http://localhost:8080/SmartCampusAPI/api/v1
+```
 
 ### 2. Get all rooms
+```bash
 curl -X GET http://localhost:8080/SmartCampusAPI/api/v1/rooms
+```
 
-### 3. Get a specific room
+### 3. Create a new room
+```bash
+curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/rooms \
+  -H "Content-Type: application/json" \
+  -d "{\"id\":\"NEW-101\",\"name\":\"New Test Room\",\"capacity\":30}"
+```
+
+### 4. Get a specific room
+```bash
 curl -X GET http://localhost:8080/SmartCampusAPI/api/v1/rooms/LIB-301
+```
 
-### 4. Get all sensors
-curl -X GET http://localhost:8080/SmartCampusAPI/api/v1/sensors
-
-### 5. Filter sensors by type
-curl -X GET "http://localhost:8080/SmartCampusAPI/api/v1/sensors?type=Temperature"
-
-### 6. Get readings for a sensor
-curl -X GET http://localhost:8080/SmartCampusAPI/api/v1/sensors/TEMP-001/readings
-
-### 7. Add a new reading
-curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/sensors/TEMP-001/readings -H "Content-Type: application/json" -d "{\"value\":24.2,\"timestamp\":1711000000000}"
-
-### 8. Try deleting a room with active sensors
+### 5. Delete a room with sensors (expect 409)
+```bash
 curl -X DELETE http://localhost:8080/SmartCampusAPI/api/v1/rooms/LIB-301
+```
 
+### 6. Get all sensors
+```bash
+curl -X GET http://localhost:8080/SmartCampusAPI/api/v1/sensors
+```
+
+### 7. Filter sensors by type
+```bash
+curl -X GET "http://localhost:8080/SmartCampusAPI/api/v1/sensors?type=Temperature"
+```
+
+### 8. Create a new sensor
+```bash
+curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/sensors \
+  -H "Content-Type: application/json" \
+  -d "{\"id\":\"TEMP-999\",\"type\":\"Temperature\",\"status\":\"ACTIVE\",\"currentValue\":20.0,\"roomId\":\"LIB-301\"}"
+```
+
+### 9. Create a sensor with invalid roomId (expect 422)
+```bash
+curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/sensors \
+  -H "Content-Type: application/json" \
+  -d "{\"id\":\"TEMP-999\",\"type\":\"Temperature\",\"status\":\"ACTIVE\",\"currentValue\":20.0,\"roomId\":\"FAKE-999\"}"
+```
+
+### 10. Get readings for a sensor
+```bash
+curl -X GET http://localhost:8080/SmartCampusAPI/api/v1/sensors/TEMP-001/readings
+```
+
+### 11. Add a new reading
+```bash
+curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/sensors/TEMP-001/readings \
+  -H "Content-Type: application/json" \
+  -d "{\"value\":24.2}"
+```
+
+### 12. Post reading to MAINTENANCE sensor (expect 403)
+```bash
+curl -X POST http://localhost:8080/SmartCampusAPI/api/v1/sensors/TEMP-003/readings \
+  -H "Content-Type: application/json" \
+  -d "{\"value\":25.0}"
+```
 
 ## Conceptual Report
 ### Question 1.1
