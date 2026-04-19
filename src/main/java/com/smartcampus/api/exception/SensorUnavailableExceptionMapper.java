@@ -7,6 +7,7 @@ package com.smartcampus.api.exception;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import javax.ws.rs.core.MediaType;
 
 /**
  *
@@ -26,6 +27,7 @@ public class SensorUnavailableExceptionMapper implements ExceptionMapper<SensorU
 
         return Response.status(Response.Status.FORBIDDEN)
                 .entity(error)
+                .type(MediaType.APPLICATION_JSON)
                 .build();
     }
 }

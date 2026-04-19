@@ -7,6 +7,9 @@ package com.smartcampus.api.exception;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import java.util.logging.Logger;
+import javax.ws.rs.core.MediaType;
+
 
 /**
  *
@@ -20,8 +23,14 @@ import javax.ws.rs.ext.Provider;
 @Provider
 public class GlobalExceptionMapper implements ExceptionMapper<Throwable> {
 
+    private static final Logger LOGGER = Logger.getLogger(GlobalExceptionMapper.class.getName());
+
     @Override
     public Response toResponse(Throwable exception) {
+
+        // Log the real error on the server side only
+        LOGGER.severe("Unexpected error: " + exception.getMessage());
+
         ErrorMessage error = new ErrorMessage(
                 "An unexpected internal server error occurred",
                 500
@@ -29,6 +38,7 @@ public class GlobalExceptionMapper implements ExceptionMapper<Throwable> {
 
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                 .entity(error)
+                .type(MediaType.APPLICATION_JSON)
                 .build();
     }
 }

@@ -7,21 +7,19 @@ package com.smartcampus.api.resources;
 import com.smartcampus.api.database.MockDatabase;
 import com.smartcampus.api.exception.DataNotFoundException;
 import com.smartcampus.api.exception.LinkedResourceNotFoundException;
-import com.smartcampus.api.model.Sensor;
 import com.smartcampus.api.model.Room;
+import com.smartcampus.api.model.Sensor;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.stream.Collectors;
-/**
- *
- * @author Akhash Vivekanantha
- */
+
 /**
  * SensorResource class
  * Handles REST API endpoints for Sensor operations
+ * @author Akhash Vivekanantha
  */
 @Path("/sensors")
 @Produces(MediaType.APPLICATION_JSON)
@@ -34,13 +32,9 @@ public class SensorResource {
      */
     @GET
     public List<Sensor> getAllSensors(@QueryParam("type") String type) {
-
-        // If no filter is provided, return all sensors
         if (type == null || type.trim().isEmpty()) {
             return MockDatabase.sensors;
         }
-
-        // Otherwise, filter sensors by type
         return MockDatabase.sensors.stream()
                 .filter(sensor -> sensor.getType().equalsIgnoreCase(type))
                 .collect(Collectors.toList());
@@ -55,12 +49,11 @@ public class SensorResource {
         return MockDatabase.sensors.stream()
                 .filter(sensor -> sensor.getId().equals(id))
                 .findFirst()
-                .orElseThrow(() ->
-                        new DataNotFoundException("Sensor with ID " + id + " not found"));
+                .orElseThrow(() -> new DataNotFoundException("Sensor with ID " + id + " not found"));
     }
 
     /**
-     * GET sensors by room ID (useful for coursework)
+     * GET sensors by room ID
      */
     @GET
     @Path("/room/{roomId}")
@@ -72,27 +65,34 @@ public class SensorResource {
 
     /**
      * POST - Add new sensor
+     * Validates that the referenced room exists
+     * Returns 201 Created on success
      */
     @POST
-    public Sensor addSensor(Sensor sensor) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response addSensor(Sensor sensor) {
 
         // Check that the referenced room exists
-        boolean roomExists = false;
+        Room foundRoom = null;
         for (Room room : MockDatabase.rooms) {
             if (room.getId().equals(sensor.getRoomId())) {
-                roomExists = true;
+                foundRoom = room;
                 break;
             }
         }
 
-        if (!roomExists) {
+        if (foundRoom == null) {
             throw new LinkedResourceNotFoundException(
-                    "Cannot create sensor because room with ID " + sensor.getRoomId() + " does not exist"
+                "Cannot create sensor because room with ID " + sensor.getRoomId() + " does not exist"
             );
         }
 
         MockDatabase.sensors.add(sensor);
-        return sensor;
+
+        // Keep room's sensorIds in sync
+        foundRoom.getSensorIds().add(sensor.getId());
+
+        return Response.status(Response.Status.CREATED).entity(sensor).build();
     }
 
     /**
@@ -116,19 +116,29 @@ public class SensorResource {
      */
     @DELETE
     @Path("/{id}")
-    public String deleteSensor(@PathParam("id") String id) {
-        boolean removed = MockDatabase.sensors.removeIf(sensor -> sensor.getId().equals(id));
+    public Response deleteSensor(@PathParam("id") String id) {
 
-        if (!removed) {
-            throw new DataNotFoundException("Sensor with ID " + id + " not found");
+        // Find the sensor first so we can clean up the room's sensorIds
+        Sensor toDelete = MockDatabase.sensors.stream()
+                .filter(s -> s.getId().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new DataNotFoundException("Sensor with ID " + id + " not found"));
+
+        // Remove sensor ID from its room's sensorIds list
+        for (Room room : MockDatabase.rooms) {
+            if (room.getId().equals(toDelete.getRoomId())) {
+                room.getSensorIds().remove(id);
+                break;
+            }
         }
 
-        return "Sensor with ID " + id + " deleted successfully";
+        MockDatabase.sensors.remove(toDelete);
+        return Response.ok("Sensor with ID " + id + " deleted successfully").build();
     }
-    
+
     /**
      * Sub-resource locator for sensor readings
-     * Delegates /sensors/{sensorId}/readings requests to SensorReadingResource
+     * Delegates /sensors/{sensorId}/readings to SensorReadingResource
      */
     @Path("/{sensorId}/readings")
     public SensorReadingResource getSensorReadingResource(@PathParam("sensorId") String sensorId) {

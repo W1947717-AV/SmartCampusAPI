@@ -7,6 +7,8 @@ package com.smartcampus.api.exception;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
+import javax.ws.rs.core.MediaType;
+
 
 /**
  *
@@ -26,6 +28,7 @@ public class LinkedResourceNotFoundExceptionMapper implements ExceptionMapper<Li
 
         return Response.status(422)
                 .entity(error)
+                .type(MediaType.APPLICATION_JSON)
                 .build();
     }
 }

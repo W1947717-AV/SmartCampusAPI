@@ -12,30 +12,22 @@ import com.smartcampus.api.model.SensorReading;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
- *
- * @author Akhash Vivekanantha
- */
-
-/**
  * SensorReadingResource class
  * Handles historical readings for a specific sensor
+ * @author Akhash Vivekanantha
  */
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class SensorReadingResource {
 
-    // Parent sensor ID from the URL context
     private String sensorId;
 
-    /**
-     * Constructor
-     * Receives the parent sensor ID from SensorResource
-     */
     public SensorReadingResource(String sensorId) {
         this.sensorId = sensorId;
     }
@@ -45,58 +37,56 @@ public class SensorReadingResource {
      */
     @GET
     public List<SensorReading> getAllReadings() {
-
-        // Check that the parent sensor exists
         Sensor sensor = findSensorById(sensorId);
         if (sensor == null) {
             throw new DataNotFoundException("Sensor with ID " + sensorId + " not found");
         }
-
-        // Return readings, or an empty list if none exist yet
         return MockDatabase.sensorReadings.getOrDefault(sensorId, new ArrayList<>());
     }
 
     /**
      * POST a new reading for this sensor
-     * Also updates the parent sensor's currentValue
+     * Blocks if sensor is in MAINTENANCE or OFFLINE status
+     * Updates parent sensor's currentValue as a side effect
+     * Returns 201 Created on success
      */
     @POST
-    public SensorReading addReading(SensorReading reading) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response addReading(SensorReading reading) {
 
-        // Check that the parent sensor exists
         Sensor sensor = findSensorById(sensorId);
         if (sensor == null) {
             throw new DataNotFoundException("Sensor with ID " + sensorId + " not found");
         }
-        
-        // Business rule:
-        // sensors in MAINTENANCE cannot accept new readings
-        if ("MAINTENANCE".equalsIgnoreCase(sensor.getStatus())) {
-            throw new SensorUnavailableException(
-                    "Sensor with ID " + sensorId + " is currently in MAINTENANCE and cannot accept new readings"
-            );
-        }        
 
-        // Auto-generate a reading ID if missing
+        // Business rule: MAINTENANCE and OFFLINE sensors cannot accept new readings
+        if ("MAINTENANCE".equalsIgnoreCase(sensor.getStatus()) ||
+            "OFFLINE".equalsIgnoreCase(sensor.getStatus())) {
+            throw new SensorUnavailableException(
+                "Sensor with ID " + sensorId + " is currently " + sensor.getStatus() + " and cannot accept new readings"
+            );
+        }
+
+        // Auto-generate reading ID if missing
         if (reading.getId() == null || reading.getId().trim().isEmpty()) {
             reading.setId(UUID.randomUUID().toString());
         }
 
-        // Store the reading under this sensor
+        // Auto-set timestamp if missing
+        if (reading.getTimestamp() == 0) {
+            reading.setTimestamp(System.currentTimeMillis());
+        }
+
         MockDatabase.sensorReadings
                 .computeIfAbsent(sensorId, key -> new ArrayList<>())
                 .add(reading);
 
-        // Side effect required by coursework:
-        // update parent sensor currentValue
+        // Side effect: update parent sensor's currentValue
         sensor.setCurrentValue(reading.getValue());
 
-        return reading;
+        return Response.status(Response.Status.CREATED).entity(reading).build();
     }
 
-    /**
-     * Helper method to find a sensor by ID
-     */
     private Sensor findSensorById(String id) {
         for (Sensor sensor : MockDatabase.sensors) {
             if (sensor.getId().equals(id)) {

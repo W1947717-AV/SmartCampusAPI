@@ -12,15 +12,14 @@ import com.smartcampus.api.model.Sensor;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.List;
-/**
- *
- * @author Akhash Vivekanantha
- */
 
 /**
  * SensorRoomResource class
- Handles REST API endpoints for Room operations
+ * Handles REST API endpoints for Room operations
+ * 
+ * @author Akhash Vivekanantha
  */
 @Path("/rooms")
 @Produces(MediaType.APPLICATION_JSON)
@@ -51,11 +50,13 @@ public class SensorRoomResource {
 
     /**
      * POST - Add new room
+     * Returns 201 Created on success
      */
     @POST
-    public Room addRoom(Room room) {
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Response addRoom(Room room) {
         MockDatabase.rooms.add(room);
-        return room;
+        return Response.status(Response.Status.CREATED).entity(room).build();
     }
 
     /**
@@ -76,12 +77,13 @@ public class SensorRoomResource {
 
     /**
      * DELETE - Remove room
+     * Business rule: cannot delete a room that still has sensors assigned
      */
     @DELETE
     @Path("/{id}")
-    public String deleteRoom(@PathParam("id") String id) {
+    public Response deleteRoom(@PathParam("id") String id) {
 
-        // Check if the room exists first
+        // Check if the room exists
         Room roomToDelete = null;
         for (Room room : MockDatabase.rooms) {
             if (room.getId().equals(id)) {
@@ -94,17 +96,16 @@ public class SensorRoomResource {
             throw new DataNotFoundException("Room with ID " + id + " not found");
         }
 
-        // Business rule:
-        // room cannot be deleted if it still has sensors assigned
+        // Business rule: block deletion if any sensors are still assigned to this room
         for (Sensor sensor : MockDatabase.sensors) {
-            if (sensor.getRoomId().equals(id) && "ACTIVE".equalsIgnoreCase(sensor.getStatus())) {
+            if (sensor.getRoomId().equals(id)) {
                 throw new RoomNotEmptyException(
-                        "Room with ID " + id + " cannot be deleted because it still has active sensors assigned"
+                    "Room with ID " + id + " cannot be deleted because it still has sensors assigned to it"
                 );
             }
         }
 
         MockDatabase.rooms.remove(roomToDelete);
-        return "Room with ID " + id + " deleted successfully";
+        return Response.ok("Room with ID " + id + " deleted successfully").build();
     }
 }
