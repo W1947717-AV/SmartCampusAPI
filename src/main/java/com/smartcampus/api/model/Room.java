@@ -32,7 +32,7 @@ public class Room {
 
     /**
      * Default constructor
-     * Required for JSON serialization/deserialization
+     * Required for JSON serialisation/deserialisation
      */
     public Room() {
     }

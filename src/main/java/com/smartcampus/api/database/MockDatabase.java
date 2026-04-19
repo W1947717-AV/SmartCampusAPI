@@ -47,6 +47,8 @@ public class MockDatabase {
     rooms.add(new Room("LAB-201", "Computer Lab", 50, new ArrayList<>()));
     rooms.add(new Room("ENG-101", "Engineering Lecture Hall", 120, new ArrayList<>()));
     rooms.add(new Room("SCI-202", "Science Lab", 60, new ArrayList<>()));
+    
+    rooms.add(new Room("TEST-100", "Test Room", 20, new ArrayList<>())); //For Test
 
     // ===== Active Sensors =====
     sensors.add(new Sensor("TEMP-001", "Temperature", "ACTIVE", 22.5, "LIB-301"));
@@ -60,6 +62,8 @@ public class MockDatabase {
     // ===== Offline sensors ======
     sensors.add(new Sensor("OCC-002", "Occupancy", "OFFLINE", 0, "LIB-301"));
     sensors.add(new Sensor("CO2-002", "CO2", "OFFLINE", 0, "ENG-101"));
+    
+    sensors.add(new Sensor("TEST-SEN-001", "Temperature", "OFFLINE", 0, "TEST-100")); // For Test
     
     // ===== Sensor Readings =====
     sensorReadings.put("TEMP-001", new ArrayList<>());
