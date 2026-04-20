@@ -11,15 +11,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-
-/**
- *
- * @author Akhash Vivekanantha
- */
+import javax.ws.rs.core.Response;
 
 /**
  * DiscoveryResource class
  * Provides root API metadata and navigation links
+ * @author Akhash Vivekanantha
  */
 @Path("/")
 @Produces(MediaType.APPLICATION_JSON)
@@ -30,9 +27,7 @@ public class DiscoveryResource {
      */
     @GET
     public Map<String, Object> getApiInfo() {
-
         Map<String, Object> response = new LinkedHashMap<>();
-
         response.put("apiName", "Smart Campus API");
         response.put("version", "v1");
         response.put("status", "active");
@@ -48,5 +43,14 @@ public class DiscoveryResource {
         response.put("resources", resources);
 
         return response;
+    }
+
+    /**
+     * Temporary test endpoint to demonstrate GlobalExceptionMapper (500)
+     */
+    @GET
+    @Path("/test500")
+    public Response triggerError() {
+        throw new NullPointerException("Simulated unexpected server error");
     }
 }
